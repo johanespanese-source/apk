@@ -12,8 +12,19 @@
     <div class="container">
         <div class="header-container">
             <header>
-                <h1>WEBSITE MONITORING PENCAHAYAAN RUANGAN</h1>
-                <p class="subtitle">Kontrol Pencahayaan Cerdas Berbasis IoT</p>
+                <div class="header-content">
+                    <div>
+                        <h1>WEBSITE MONITORING PENCAHAYAAN RUANGAN</h1>
+                        <p class="subtitle">Kontrol Pencahayaan Cerdas Berbasis IoT</p>
+                    </div>
+                    <div class="user-controls">
+                        <span class="welcome-text">Welcome, {{ username }}</span>
+                        <a href="{{ url_for('logout') }}" class="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </a>
+                    </div>
+                </div>
             </header>
         </div>
 
