@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
             --primary: #0f4cff;
@@ -33,7 +33,6 @@
             line-height: 1.6;
         }
 
-        /* Container login */
         .login-container {
             background: var(--glass-bg);
             padding: 40px;
@@ -45,13 +44,11 @@
             border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        /* Animasi masuk */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Judul */
         .login-container h1 {
             font-size: 1.5em;
             margin-bottom: 20px;
@@ -59,7 +56,6 @@
             font-weight: 700;
         }
 
-        /* Form group */
         .form-group {
             margin-bottom: 20px;
             text-align: left;
@@ -69,9 +65,10 @@
             font-size: 0.9em;
             color: #64748b;
             font-weight: 500;
+            display: block;
+            margin-bottom: 5px;
         }
 
-        /* Input */
         .form-control {
             width: 100%;
             padding: 12px;
@@ -82,6 +79,7 @@
             color: var(--dark);
             font-size: 1em;
             outline: none;
+            box-sizing: border-box;
             transition: var(--transition);
         }
 
@@ -89,8 +87,6 @@
             border-color: var(--primary-light);
             box-shadow: 0 0 0 3px rgba(15, 76, 255, 0.1);
         }
-
-        /* Tombol */
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
@@ -144,15 +140,16 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST">
+        <form method="POST" id="loginForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" name="username" required class="form-control">
+                <input type="text" id="username" name="username" required class="form-control">
             </div>
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" name="password" required class="form-control">
+                <input type="password" id="password" name="password" required class="form-control">
             </div>
             
             <button type="submit" class="btn-primary">Login</button>

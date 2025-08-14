@@ -1,13 +1,31 @@
 from flask import Flask, jsonify, request, render_template, send_from_directory, redirect, url_for, flash, session
 from datetime import datetime
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_wtf.csrf import CSRFProtect
 import pymysql
 import pymysql.cursors
 import os
-import uuid
+import logging
+from logging.handlers import RotatingFileHandler
+
+# Konfigurasi logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
+handler.setFormatter(logging.Formatter(
+    '%(asctime)s [%(levelname)s] - %(message)s'
+))
+logger.addHandler(handler)
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = 'your_secret_key_here'  # Ganti dengan kunci rahasia yang kuat
+
+# Konfigurasi CSRF
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_SECRET_KEY'] = 'csrf_secret_key_here'  # Ganti dengan kunci rahasia yang berbeda
+app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # Token berlaku selama 1 jam
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 # Konfigurasi MySQL
 app.config['MYSQL_HOST'] = 'localhost'
@@ -31,28 +49,23 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Dictionary untuk menyimpan session token aktif
-active_sessions = {}
-
 class User(UserMixin):
-    def __init__(self, user_id, username, name):
-        self.id = user_id
-        self.username = username
-        self.name = name
+    def __init__(self, user_data):
+        self.id = user_data['id']
+        self.username = user_data['username']
+        self.name = user_data['name']
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Periksa apakah session token valid
-    if user_id in active_sessions and session.get('session_token') == active_sessions[user_id]:
-        connection = get_db_connection()
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
-                user_data = cursor.fetchone()
-            if user_data:
-                return User(user_data['id'], user_data['username'], user_data['name'])
-        finally:
-            connection.close()
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
+            user_data = cursor.fetchone()
+        if user_data:
+            return User(user_data)
+    finally:
+        connection.close()
     return None
 
 # Simulasi status perangkat
@@ -65,70 +78,151 @@ device_status = {
 }
 
 # ================== ROUTE AUTHENTICATION ================== #
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    return render_template('login.html')
-
-@app.route('/verify-login', methods=['GET'])
-def verify_login():
-    username = request.form.get('username')
-    password = request.form.get('password')
-
-    connection = get_db_connection()
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
-            account = cursor.fetchone()
-
-        if account:
-            # Verifikasi password (SHA2)
+    
+    if request.method == 'POST':
+        # Verify CSRF token for both AJAX and regular form submissions
+        token = request.form.get('csrf_token')
+        if not token:
+            token = request.headers.get('X-CSRFToken')
+        if not token:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': 'CSRF token missing'}), 400
+            flash('CSRF token missing', 'error')
+            return render_template('login.html')
+            
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
+        
+        if not username or not password:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': 'Username dan password harus diisi!'}), 400
+            flash('Username dan password harus diisi!', 'error')
+            return render_template('login.html')
+        
+        try:
+            connection = get_db_connection()
+            logger.info(f"Login attempt for username: {username}")
+            logger.debug("Database connection established")
+            
             with connection.cursor() as cursor:
-                cursor.execute('SELECT SHA2(%s, 256) = %s AS password_match',
-                               (password, account['password']))
-                result = cursor.fetchone()
-                password_match = result['password_match']
-
-            if password_match:
-                user_id = str(account['id'])
-
-                # Logout sesi sebelumnya jika ada
-                if user_id in active_sessions:
-                    del active_sessions[user_id]
-                    flash('Sesi sebelumnya telah diakhiri karena login dari perangkat baru.', 'info')
-
-                # Buat session token baru
-                session_token = str(uuid.uuid4())
-                active_sessions[user_id] = session_token
-                session['session_token'] = session_token
-
-                user = User(account['id'], account['username'], account['name'])
-                login_user(user)
-                flash('Login berhasil!', 'success')
-                return redirect(url_for('index'))
-
-        flash('Username atau password salah!', 'danger')
-    finally:
-        connection.close()
-
-    return redirect(url_for('login'))
+                # Langsung periksa username dan password tanpa hashing
+                query = 'SELECT * FROM users WHERE username = %s AND password = %s'
+                cursor.execute(query, (username, password))
+                logger.debug(f"Executing query: {query} with username={username}")
+                account = cursor.fetchone()
+                logger.debug(f"Query result: {account}")
+                
+                if account:
+                    user = User(account)
+                    login_user(user)
+                    logger.info(f'Login successful for user: {username}')
+                    
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({
+                            'success': True,
+                            'message': 'Login berhasil!',
+                            'redirect': url_for('index')
+                        })
+                    
+                    flash('Login berhasil!', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    logger.warning(f'Failed login attempt for username: {username}')
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({
+                            'success': False,
+                            'error': 'Username atau password salah!'
+                        }), 401
+                    
+                    flash('Username atau password salah!', 'error')
+        
+        except Exception as e:
+            logger.error(f'Database error during login: {str(e)}')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': False,
+                    'error': 'Terjadi kesalahan pada server'
+                }), 500
+            flash('Terjadi kesalahan pada server', 'error')
+            return render_template('login.html')
+        
+        finally:
+            if 'connection' in locals():
+                connection.close()
+                logger.debug('Database connection closed')
+    
+    return render_template('login.html')
 
 @app.route('/logout')
 @login_required
 def logout():
-    user_id = str(current_user.id)
-    
-    # Hapus session token
-    if user_id in active_sessions:
-        del active_sessions[user_id]
-    
-    if 'session_token' in session:
-        del session['session_token']
-    
     logout_user()
     flash('Anda telah logout.', 'info')
     return redirect(url_for('login'))
+
+# Route untuk mengecek database
+@app.route('/check_db')
+def check_db():
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            # Check if users table exists
+            cursor.execute("SHOW TABLES LIKE 'users'")
+            table_exists = cursor.fetchone()
+            
+            if table_exists:
+                # Get table structure
+                cursor.execute("DESCRIBE users")
+                structure = cursor.fetchall()
+                
+                # Get user count
+                cursor.execute("SELECT COUNT(*) as count FROM users")
+                count = cursor.fetchone()['count']
+                
+                return jsonify({
+                    'success': True,
+                    'table_exists': True,
+                    'structure': structure,
+                    'user_count': count
+                })
+            else:
+                # Create users table if it doesn't exist
+                cursor.execute("""
+                    CREATE TABLE users (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        username VARCHAR(50) UNIQUE NOT NULL,
+                        password VARCHAR(100) NOT NULL,
+                        name VARCHAR(100) NOT NULL
+                    )
+                """)
+                
+                # Insert a default admin user
+                cursor.execute("""
+                    INSERT INTO users (username, password, name)
+                    VALUES ('admin', 'admin123', 'Administrator')
+                """)
+                connection.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Users table created with default admin user',
+                    'credentials': {
+                        'username': 'admin',
+                        'password': 'admin123'
+                    }
+                })
+    except Exception as e:
+        logger.error(f"Database check error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+    finally:
+        connection.close()
 
 # ================== PROTECTED ROUTES ================== #
 @app.route('/')
@@ -144,6 +238,7 @@ def serve_static(path):
 
 # Endpoint untuk ESP32: POST sensor data
 @app.route('/update_esp32_status', methods=['POST'])
+@csrf.exempt
 def update_esp32_status():
     """Endpoint untuk menerima data sensor dari ESP32"""
     data = request.json
