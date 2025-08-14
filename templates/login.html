@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --primary: #0f4cff;
+            --primary-light: #3b6bff;
+            --primary-dark: #0a3dcc;
+            --success: #10b981;
+            --warning: #f8961e;
+            --danger: #f72585;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        /* Reset dasar */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Container login */
+        .login-container {
+            background: var(--glass-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            width: 350px;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Animasi masuk */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Judul */
+        .login-container h1 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Form group */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            font-size: 0.9em;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Input */
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: var(--dark);
+            font-size: 1em;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(15, 76, 255, 0.1);
+        }
+
+        /* Tombol */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--card-shadow);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            box-shadow: 0 8px 20px rgba(15, 76, 255, 0.3);
+        }
+
+        /* Alert */
+        .alert {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .alert-danger { 
+            background: rgba(247, 37, 133, 0.1); 
+            color: var(--danger);
+            border: 1px solid rgba(247, 37, 133, 0.2);
+        }
+        .alert-success { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login Sistem Kontrol Lampu</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" name="username" required class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" required class="form-control">
+            </div>
+            
+            <button type="submit" class="btn-primary">Login</button>
+        </form>
+    </div>
+</body>
+</html>

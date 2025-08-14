@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Pencahayaan Ruangan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <header>
+                <h1>WEBSITE MONITORING PENCAHAYAAN RUANGAN</h1>
+                <p class="subtitle">Kontrol Pencahayaan Cerdas Berbasis IoT</p>
+            </header>
+        </div>
+
+        <div class="dashboard">
+            <div class="status-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-microchip"></i>
+                        <h2>Status Sensor</h2>
+                    </div>
+                    <div class="last-update">
+                        <i class="fas fa-sync-alt"></i>
+                        <span id="update-time">Memuat...</span>
+                    </div>
+                </div>
+                
+                <div class="sensor-data">
+                    <div class="sensor-item">
+                        <div class="sensor-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-title">
+                                <i class="fas fa-info-circle"></i>
+                                Kehadiran
+                            </div>
+                            <div class="sensor-value" id="presence-value">Memuat...</div>
+                        </div>
+                        <div class="sensor-indicator" id="presence-indicator"></div>
+                    </div>
+                    
+                    <div class="sensor-item">
+                        <div class="sensor-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-title">
+                                <i class="fas fa-info-circle"></i>
+                                Intensitas Cahaya
+                            </div>
+                            <div class="sensor-value" id="light-level">Memuat...</div>
+                            <div class="sensor-unit">lux</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-level lux-progress" id="lux-progress"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span>0 lux</span>
+                                <span>Optimal: 200-500 lux</span>
+                                <span>1000 lux</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sensor-item">
+                        <div class="sensor-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-title">
+                                <i class="fas fa-info-circle"></i>
+                                Status Lampu
+                            </div>
+                            <div class="sensor-value" id="lamp-status">Memuat...</div>
+                            <div class="sensor-unit">intensitas</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-level light-progress" id="light-progress"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span>0%</span>
+                                <span>Sedang: 30-70%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-sliders-h"></i>
+                        <h2>Kontrol Lampu</h2>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="mode-control">
+                        <div class="mode-title">
+                            <i class="fas fa-cog"></i>
+                            <span>Mode Kontrol:</span>
+                        </div>
+                        <div class="toggle-container">
+                            <span class="toggle-label active" id="manual-label">Manual</span>
+                            <label class="switch">
+                                <input type="checkbox" id="mode-switch">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label" id="auto-label">Otomatis</span>
+                        </div>
+                    </div>
+                    
+                    <div class="brightness-control" id="brightness-control">
+                        <div class="brightness-header">
+                            <div class="brightness-title">
+                                <i class="fas fa-sun"></i>
+                                <span>Kontrol Kecerahan</span>
+                            </div>
+                            <div class="brightness-value" id="brightness-value">0%</div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <input type="range" min="0" max="100" value="10" class="brightness-slider" id="brightness-slider">
+                            <div class="slider-labels">
+                                <span>0%</span>
+                                <span>50%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="step-buttons">
+                            <button class="step-btn" id="decrease-btn">
+                                <i class="fas fa-minus"></i>
+                                <span>-10%</span>
+                            </button>
+                            <button class="step-btn" id="increase-btn">
+                                <i class="fas fa-plus"></i>
+                                <span>+10%</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-actions">
+                        <button class="control-btn" id="power-btn">
+                            <i class="fas fa-power-off"></i>
+                            <span>Matikan</span>
+                        </button>
+                        <button class="control-btn" id="optimal-btn">
+                            <i class="fas fa-adjust"></i>
+                            <span>Optimal</span>
+                        </button>
+                        <button class="control-btn" id="max-btn">
+                            <i class="fas fa-sun"></i>
+                            <span>Maksimal</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="lamp-visual">
+                    <div class="lamp-container">
+                        <div class="lamp-icon on" id="lamp-icon">
+                            <div class="bulb"></div>
+                            <div class="base"></div>
+                            <div class="glow"></div>
+                            <div class="light-rays"></div>
+                        </div>
+                    </div>
+                    <div class="lamp-intensity">
+                        <div class="intensity-bar">
+                            <div class="intensity-fill" id="intensity-fill"></div>
+                        </div>
+                        <div class="intensity-info">
+                            <span>0%</span>
+                            <span>Intensitas: <strong id="intensity-text">10%</strong></span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Kontrol Pencahayaan Smart Class 2025</strong></p>
+        </div>
+    </div>
+    
+    <script src="/static/script.js"></script>
+</body>
+</html>

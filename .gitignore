@@ -1,0 +1,65 @@
+# Python virtual environment
+web-venv/
+venv/
+ENV/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Flask specific
+instance/
+.webassets-cache
+flask_session/
+
+# Database credentials and local config
+*.sqlite
+*.sqlite3
+*.db
+
+# Environment variables and secrets
+.env
+.flaskenv
+*.pem
+*.key
+secret_key.txt
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and databases
+*.log
+logs/
+
+# Local development configuration
+config.local.py
+
+# Compiled Python files
+*.pyc
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Test coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*.cover

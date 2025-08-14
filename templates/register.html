@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - Monitoring Pencahayaan Ruangan</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>Buat Akun Baru</h1>
+            <p>Isi data di bawah ini untuk mendaftar</p>
+        </div>
+        
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <form class="login-form" method="POST" action="{{ url_for('register') }}">
+            <div class="input-group">
+                <label for="name">Nama Lengkap</label>
+                <input type="text" id="name" name="name" required placeholder="Masukkan nama lengkap">
+            </div>
+
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Masukkan username">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Masukkan password">
+            </div>
+            
+            <button type="submit" class="login-button">Daftar</button>
+        </form>
+        
+        <div class="footer">
+            <p>Sudah punya akun? <a href="{{ url_for('login') }}">Login di sini</a></p>
+        </div>
+    </div>
+</body>
+</html>
